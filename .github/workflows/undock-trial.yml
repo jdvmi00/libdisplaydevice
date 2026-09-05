@@ -40,6 +40,22 @@ jobs:
           cmake -S . -B build -G Ninja -DBUILD_DOCS=OFF -DBUILD_TESTS=ON
           cmake --build build -j 4
           ./build/tests/test_libdisplaydevice.exe --gtest_output=xml:library-tests.xml
+      - name: Prove regression against original recovery code
+        run: |
+          git fetch --depth=1 https://github.com/LizardByte/libdisplaydevice.git fe7e6a81f65deae91594702e1a185f47229745b9
+          cp src/windows/settings_manager_revert.cpp build/revert-patched.cpp
+          trap 'cp build/revert-patched.cpp src/windows/settings_manager_revert.cpp' EXIT
+          git show fe7e6a81f65deae91594702e1a185f47229745b9:src/windows/settings_manager_revert.cpp > src/windows/settings_manager_revert.cpp
+          cmake --build build -j 4
+          if ./build/tests/test_libdisplaydevice.exe --gtest_filter=UndockRecovery.ClosedLidRetainsRecoveryUntilPanelAppears > regression-before.log 2>&1; then
+            cat regression-before.log
+            exit 1
+          fi
+          grep -F '[  FAILED  ] UndockRecovery.ClosedLidRetainsRecoveryUntilPanelAppears' regression-before.log
+          cp build/revert-patched.cpp src/windows/settings_manager_revert.cpp
+          trap - EXIT
+          cmake --build build -j 4
+          ./build/tests/test_libdisplaydevice.exe --gtest_output=xml:library-tests.xml
       - name: Fetch matching Sunshine source
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
@@ -65,5 +81,6 @@ jobs:
           name: undock-trial-windows
           path: |
             library-tests.xml
+            regression-before.log
             sunshine/build/tests/sunshine-tests.xml
             sunshine/build/sunshine.exe

@@ -117,3 +117,11 @@ TEST_F_S(Bool) {
   executeTestCase(true, R"(true)");
   executeTestCase(false, R"(false)");
 }
+
+TEST_F_S(EnumeratedDeviceInternalPanelMetadata) {
+  display_device::EnumeratedDevice device {.m_is_internal = true};
+  EXPECT_TRUE(display_device::fromJson(R"({"device_id":"","display_name":"","edid":null,"friendly_name":"","info":null})", device));
+  EXPECT_FALSE(device.m_is_internal);
+  device.m_is_internal = true;
+  executeTestCase(device, R"({"device_id":"","display_name":"","edid":null,"friendly_name":"","info":null,"is_internal":true})");
+}

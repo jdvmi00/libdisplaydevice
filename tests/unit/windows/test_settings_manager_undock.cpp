@@ -24,6 +24,7 @@ namespace {
     bool lie_about_activation {};
     bool fail_cleanup {};
     bool fail_clear {};
+    bool lie_about_cleanup {};
     int clears {};
     std::shared_ptr<NiceMock<MockWinDisplayDevice>> api = std::make_shared<NiceMock<MockWinDisplayDevice>>();
     std::shared_ptr<NiceMock<MockSettingsPersistence>> persistence = std::make_shared<NiceMock<MockSettingsPersistence>>();
@@ -64,7 +65,7 @@ namespace {
         if (fail_cleanup && !ids.contains("stream")) {
           return false;
         }
-        if (!lie_about_activation) {
+        if (!lie_about_activation && !(lie_about_cleanup && !ids.contains("stream"))) {
           active = target;
         }
         return true;
@@ -190,4 +191,13 @@ TEST_F(UndockRecovery, FailedPersistenceCanRetry) {
   EXPECT_EQ(manager->revertSettings(), SettingsManager::RevertResult::Ok);
   EXPECT_EQ(active, (ActiveTopology {{"panel"}}));
   EXPECT_EQ(clears, 1);
+}
+
+TEST_F(UndockRecovery, CleanupRequiresReadback) {
+  openLid();
+  lie_about_cleanup = true;
+  init();
+  EXPECT_EQ(manager->revertSettings(), SettingsManager::RevertResult::SwitchingTopologyFailed);
+  EXPECT_EQ(clears, 0);
+  EXPECT_TRUE(win_utils::flattenTopology(active).contains("stream"));
 }
