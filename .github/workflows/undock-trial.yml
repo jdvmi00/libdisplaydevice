@@ -69,8 +69,9 @@ jobs:
           BRANCH: undock-trial
           COMMIT: ${{ github.sha }}
         run: |
+          git -C sunshine/third-party/moonlight-common-c submodule update --init --recursive --depth 1
           cp -r src/. sunshine/third-party/libdisplaydevice/src/
-          cmake -S sunshine -B sunshine/build -G Ninja -DBUILD_DOCS=OFF -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Release -DSUNSHINE_ASSETS_DIR=assets -DSUNSHINE_PUBLISHER_NAME=jdvmi00 -DSUNSHINE_PUBLISHER_ISSUE_URL=https://github.com/jdvmi00/libdisplaydevice
+          cmake -S sunshine -B sunshine/build -G Ninja -DBUILD_DOCS=OFF -DBUILD_TESTS=ON -DBUILD_WERROR=ON -DCMAKE_BUILD_TYPE=Release -DSUNSHINE_ASSETS_DIR=assets -DSUNSHINE_PUBLISHER_NAME=jdvmi00 -DSUNSHINE_PUBLISHER_ISSUE_URL=https://github.com/jdvmi00/libdisplaydevice
           cmake --build sunshine/build -j 4
           cd sunshine/build/tests
           ./test_sunshine.exe --gtest_output=xml:sunshine-tests.xml
