@@ -105,6 +105,13 @@ namespace display_device {
      */
     [[nodiscard]] RevertResult revertModifiedSettings(const ActiveTopology &current_topology, bool &system_settings_touched, bool *switched_topology = nullptr);
 
+    /**
+     * @brief Recover to surviving original displays or a built-in panel after an undock.
+     * Only devices activated by this session may be removed. The original recovery
+     * record remains intact on failure; a visible replacement is verified first.
+     */
+    [[nodiscard]] bool recoverMissingTopology(const ActiveTopology &current_topology);
+
     std::shared_ptr<WinDisplayDeviceInterface> m_dd_api;
     std::shared_ptr<AudioContextInterface> m_audio_context_api;
     std::unique_ptr<PersistentState> m_persistence_state;

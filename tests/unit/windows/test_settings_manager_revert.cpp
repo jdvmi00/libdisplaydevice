@@ -545,6 +545,7 @@ TEST_F_S_MOCKED(FailedToSetInitialTopology) {
     .WillOnce(Return(false))
     .RetiresOnSaturation();
 
+  EXPECT_CALL(*m_dd_api, enumAvailableDevices()).WillOnce(Return(CURRENT_DEVICES));
   expectedDefaultTopologyGuardCall(sequence);
   expectedHdrWorkaroundCalls(sequence);
 

@@ -50,6 +50,8 @@ namespace display_device {
       const auto source_mode {is_active ? win_utils::getSourceMode(win_utils::getSourceIndex(best_path, display_data->m_modes), display_data->m_modes) : nullptr};
       const auto display_name {is_active ? m_w_api->getDisplayName(best_path) : std::string {}};  // Inactive devices can have multiple display names, so it's just meaningless use any
       const auto edid {EdidData::parse(m_w_api->getEdid(best_path))};
+      const auto technology {best_path.targetInfo.outputTechnology};
+      const bool is_internal {technology == DISPLAYCONFIG_OUTPUT_TECHNOLOGY_INTERNAL || technology == DISPLAYCONFIG_OUTPUT_TECHNOLOGY_LVDS || technology == DISPLAYCONFIG_OUTPUT_TECHNOLOGY_DISPLAYPORT_EMBEDDED || technology == DISPLAYCONFIG_OUTPUT_TECHNOLOGY_UDI_EMBEDDED};
 
       if (is_active && !source_mode) {
         DD_LOG(warning) << "Device " << device_id << " is missing source mode!";
@@ -71,7 +73,8 @@ namespace display_device {
            display_name,
            friendly_name,
            edid,
-           info}
+           info,
+           is_internal}
         );
       } else {
         available_devices.push_back(
@@ -79,7 +82,8 @@ namespace display_device {
            display_name,
            friendly_name,
            edid,
-           std::nullopt}
+           std::nullopt,
+           is_internal}
         );
       }
     }
