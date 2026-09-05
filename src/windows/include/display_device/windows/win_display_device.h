@@ -19,9 +19,10 @@ namespace display_device {
   public:
     /**
      * Default constructor for the class.
+     * @param save_to_database Whether CCD changes update Windows' saved display layout.
      * @param w_api A pointer to the Windows API layer. Will throw on nullptr!
      */
-    explicit WinDisplayDevice(std::shared_ptr<WinApiLayerInterface> w_api);
+    explicit WinDisplayDevice(std::shared_ptr<WinApiLayerInterface> w_api, bool save_to_database = true);
 
     /** For details @see WinDisplayDeviceInterface::isApiAccessAvailable */
     [[nodiscard]] bool isApiAccessAvailable() const override;
@@ -64,5 +65,6 @@ namespace display_device {
 
   private:
     std::shared_ptr<WinApiLayerInterface> m_w_api;
+    bool m_save_to_database;
   };
 }  // namespace display_device

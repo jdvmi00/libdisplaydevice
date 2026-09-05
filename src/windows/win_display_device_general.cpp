@@ -10,8 +10,9 @@
 #include "display_device/windows/win_api_utils.h"
 
 namespace display_device {
-  WinDisplayDevice::WinDisplayDevice(std::shared_ptr<WinApiLayerInterface> w_api):
-      m_w_api {std::move(w_api)} {
+  WinDisplayDevice::WinDisplayDevice(std::shared_ptr<WinApiLayerInterface> w_api, bool save_to_database):
+      m_w_api {std::move(w_api)},
+      m_save_to_database {save_to_database} {
     if (!m_w_api) {
       throw std::logic_error {"Nullptr provided for WinApiLayerInterface in WinDisplayDevice!"};
     }

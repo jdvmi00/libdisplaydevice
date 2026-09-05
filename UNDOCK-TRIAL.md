@@ -53,3 +53,28 @@ which newly attached external or virtual display should replace the old layout.
 Native API readback verifies the Windows configuration; a person must confirm the
 physical screen is visible. A switch can still race a concurrent hardware change;
 a failed result retains the recovery record for a later retry.
+
+## Live trial and docking persistence follow-up
+
+The d906331 trial passed the closed-lid undock/reopen test on the laptop:
+internal 1920x1200 became primary, virtual output became inactive, and Sunshine
+removed the recovery record. A subsequent undocked stream also restored correctly.
+The SSH helper stayed disabled throughout.
+
+Redocking exposed another issue. Native QDC_DATABASE_CURRENT readback showed
+virtual-only as the saved docked topology. After explicitly saving Dell-only,
+starting a Sunshine stream changed that saved topology to virtual-only again.
+Normal disconnect restored both active and saved Dell-only layouts, but undocking
+mid-stream left the absent dock's saved layout at virtual-only.
+
+The follow-up adds an opt-out of CCD database writes to WinDisplayDevice, defaulting
+to the existing behavior. The accompanying Sunshine patch opts out for streaming.
+Temporary topology uses SDC_USE_SUPPLIED_DISPLAY_CONFIG plus SDC_ALLOW_CHANGES,
+not SDC_TOPOLOGY_SUPPLIED (which the live test showed changes the remembered
+layout). Mode, primary, and rollback CCD calls likewise omit SDC_SAVE_TO_DATABASE.
+HDR behavior is unchanged; HDR changes are disabled in this trial configuration.
+Windows selects modes for temporary topology; actual virtual and physical modes
+must be verified on hardware, alongside saved-layout readback while streaming.
+
+The follow-up is not yet hardware validated. The first trial remains installed,
+with the Dell-only docked layout restored, until the new build passes its checks.
