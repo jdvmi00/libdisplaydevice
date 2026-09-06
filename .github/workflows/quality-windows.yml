@@ -1,0 +1,40 @@
+name: Windows quality validation
+on:
+  push:
+    branches: [ci/laptop-undock-quality]
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-2022
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          submodules: recursive
+      - uses: msys2/setup-msys2@e9898307ac31d1a803454791be09ab9973336e1c
+        with:
+          msystem: ucrt64
+          update: true
+          install: >-
+            git
+            mingw-w64-ucrt-x86_64-toolchain
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-boost
+            mingw-w64-ucrt-x86_64-nlohmann-json
+            mingw-w64-ucrt-x86_64-cppwinrt
+      - name: Build and test display library
+        run: |
+          cmake -S . -B cmake-build-quality -G Ninja -DBUILD_DOCS=OFF -DBUILD_TESTS=ON
+          cmake --build cmake-build-quality -j 4
+          ./cmake-build-quality/tests/test_libdisplaydevice.exe --gtest_output=xml:library-tests.xml
+      - name: Save test report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: quality-windows-tests
+          path: library-tests.xml
